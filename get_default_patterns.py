@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-Script to identify which patterns Codacy enables by default for SonarC#
+Script to get all default patterns for SonarC# tool from Codacy
 """
 
 import requests
-import xml.etree.ElementTree as ET
-import os
 import sys
+import os
 import argparse
 from pathlib import Path
+from typing import List, Dict, Optional
+import defusedxml.ElementTree as ET
 
 def load_env_file():
     """Load environment variables from .env file if it exists"""
@@ -38,15 +39,16 @@ def get_api_token(args_token=None):
 
     return token
 
-def get_xml_rules():
+def get_xml_rules() -> set:
     """Extract rule keys from XML file"""
     tree = ET.parse("csharp_sonarqube_rules.xml")
     root = tree.getroot()
 
     rules = []
     for rule in root.findall('.//rule'):
-        key = rule.find('key').text
-        rules.append(key)
+        key_elem = rule.find('key')
+        if key_elem is not None and key_elem.text is not None:
+            rules.append(key_elem.text)
 
     return set(rules)
 

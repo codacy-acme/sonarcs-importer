@@ -4,12 +4,13 @@ Script to verify what patterns are actually enabled in a Codacy coding standard
 and compare with the XML file
 """
 
-import xml.etree.ElementTree as ET
 import requests
 import sys
 import os
 import argparse
 from pathlib import Path
+from typing import List, Optional
+import defusedxml.ElementTree as ET
 
 def load_env_file():
     """Load environment variables from .env file if it exists"""
@@ -39,15 +40,16 @@ def get_api_token(args_token=None):
 
     return token
 
-def get_xml_rules():
+def get_xml_rules() -> List[str]:
     """Extract rule keys from XML file"""
     tree = ET.parse("csharp_sonarqube_rules.xml")
     root = tree.getroot()
 
     rules = []
     for rule in root.findall('.//rule'):
-        key = rule.find('key').text
-        rules.append(key)
+        key_elem = rule.find('key')
+        if key_elem is not None and key_elem.text is not None:
+            rules.append(key_elem.text)
 
     return sorted(rules)
 
