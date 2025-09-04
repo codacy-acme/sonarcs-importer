@@ -8,6 +8,7 @@ import os
 import sys
 import argparse
 from pathlib import Path
+from typing import Optional
 
 def load_env_file():
     """Load environment variables from .env file if it exists"""
@@ -37,7 +38,7 @@ def get_api_token(args_token=None):
 
     return token
 
-def create_minimal_standard(api_token):
+def create_minimal_standard(api_token: str) -> Optional[str]:
     """Create a minimal coding standard to test default behavior"""
     headers = {
         "api-token": api_token,
@@ -66,7 +67,7 @@ def create_minimal_standard(api_token):
         print(f"Error creating coding standard: {e}")
         return None
 
-def check_standard_patterns(standard_id, api_token):
+def check_standard_patterns(standard_id: str, api_token: str) -> int:
     """Check how many patterns are enabled in a coding standard"""
     headers = {
         "api-token": api_token,
@@ -100,7 +101,7 @@ def check_standard_patterns(standard_id, api_token):
         print(f"Error checking standard: {e}")
         return 0
 
-def disable_all_tools_in_standard(standard_id, api_token):
+def disable_all_tools_in_standard(standard_id: str, api_token: str) -> int:
     """Disable all tools in a coding standard"""
     headers = {
         "api-token": api_token,

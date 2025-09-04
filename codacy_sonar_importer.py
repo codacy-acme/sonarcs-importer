@@ -28,11 +28,11 @@ import argparse
 import json
 import os
 import sys
-import xml.etree.ElementTree as ET
-from typing import Dict, List, Set
+from typing import Dict, List, Optional
 import requests
 from urllib.parse import quote
 from pathlib import Path
+import defusedxml.ElementTree as ET
 
 def load_env_file():
     """Load environment variables from .env file if it exists"""
@@ -90,18 +90,35 @@ class CodacySonarImporter:
             print(f"Found {len(rules)} rules in XML file")
 
             for rule in rules:
-                repository_key = rule.find('repositoryKey').text
-                key = rule.find('key').text
-                priority = rule.find('priority').text
+                repository_key_elem = rule.find('repositoryKey')
+                key_elem = rule.find('key')
+                priority_elem = rule.find('priority')
+                
+                if repository_key_elem is None or repository_key_elem.text is None:
+                    print("Warning: Rule missing repositoryKey, skipping")
+                    continue
+                if key_elem is None or key_elem.text is None:
+                    print("Warning: Rule missing key, skipping")
+                    continue
+                if priority_elem is None or priority_elem.text is None:
+                    print("Warning: Rule missing priority, skipping")
+                    continue
+                    
+                repository_key = repository_key_elem.text
+                key = key_elem.text
+                priority = priority_elem.text
 
                 # Extract parameters if they exist
                 parameters = {}
                 params_element = rule.find('parameters')
                 if params_element is not None:
                     for param in params_element.findall('parameter'):
-                        param_key = param.find('key').text
-                        param_value = param.find('value').text
-                        parameters[param_key] = param_value
+                        param_key_elem = param.find('key')
+                        param_value_elem = param.find('value')
+                        
+                        if param_key_elem is not None and param_key_elem.text is not None and \
+                           param_value_elem is not None and param_value_elem.text is not None:
+                            parameters[param_key_elem.text] = param_value_elem.text
 
                 self.sonar_rules.append({
                     'repository_key': repository_key,
