@@ -28,11 +28,11 @@ import argparse
 import json
 import os
 import sys
-from typing import Dict, List, Optional
+from typing import Dict, List
 import requests
 from urllib.parse import quote
 from pathlib import Path
-import defusedxml.ElementTree as ET
+import defusedxml.ElementTree as xml_tree
 
 def load_env_file():
     """Load environment variables from .env file if it exists"""
@@ -82,7 +82,7 @@ class CodacySonarImporter:
         print(f"Parsing SonarQube XML file: {xml_file}")
 
         try:
-            tree = ET.parse(xml_file)
+            tree = xml_tree.parse(xml_file)
             root = tree.getroot()
 
             # Extract rules from XML
@@ -93,7 +93,7 @@ class CodacySonarImporter:
                 repository_key_elem = rule.find('repositoryKey')
                 key_elem = rule.find('key')
                 priority_elem = rule.find('priority')
-                
+
                 if repository_key_elem is None or repository_key_elem.text is None:
                     print("Warning: Rule missing repositoryKey, skipping")
                     continue
@@ -103,7 +103,7 @@ class CodacySonarImporter:
                 if priority_elem is None or priority_elem.text is None:
                     print("Warning: Rule missing priority, skipping")
                     continue
-                    
+
                 repository_key = repository_key_elem.text
                 key = key_elem.text
                 priority = priority_elem.text
@@ -115,7 +115,7 @@ class CodacySonarImporter:
                     for param in params_element.findall('parameter'):
                         param_key_elem = param.find('key')
                         param_value_elem = param.find('value')
-                        
+
                         if param_key_elem is not None and param_key_elem.text is not None and \
                            param_value_elem is not None and param_value_elem.text is not None:
                             parameters[param_key_elem.text] = param_value_elem.text
@@ -129,7 +129,7 @@ class CodacySonarImporter:
 
             print(f"Successfully parsed {len(self.sonar_rules)} SonarQube rules")
 
-        except ET.ParseError as e:
+        except xml_tree.ParseError as e:
             print(f"Error parsing XML file: {e}")
             sys.exit(1)
         except FileNotFoundError:
@@ -578,7 +578,7 @@ class CodacySonarImporter:
                 'enabled_patterns': enabled_rules
             }, f, indent=2)
 
-        print(f"Generated output files:")
+        print("Generated output files:")
         print(f"  - Skipped rules: {skipped_filename} ({len(skipped_rules)} rules)")
         print(f"  - Enabled patterns: {enabled_filename} ({len(enabled_rules)} patterns)")
 
