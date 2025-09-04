@@ -24,10 +24,10 @@ def load_env_file():
 def get_api_token(args_token=None):
     """Get API token from command line args, environment variable, or .env file"""
     load_env_file()
-    
+
     # Priority: command line arg > environment variable > .env file
     token = args_token or os.getenv("CODACY_API_TOKEN")
-    
+
     if not token:
         print("Error: Codacy API token is required.")
         print("Set it via:")
@@ -35,19 +35,19 @@ def get_api_token(args_token=None):
         print("  2. CODACY_API_TOKEN environment variable")
         print("  3. CODACY_API_TOKEN in .env file")
         sys.exit(1)
-    
+
     return token
 
 def get_xml_rules():
     """Extract rule keys from XML file"""
     tree = ET.parse("csharp_sonarqube_rules.xml")
     root = tree.getroot()
-    
+
     rules = []
     for rule in root.findall('.//rule'):
         key = rule.find('key').text
         rules.append(key)
-    
+
     return sorted(rules)
 
 def get_codacy_patterns(api_token):
@@ -56,15 +56,15 @@ def get_codacy_patterns(api_token):
         "api-token": api_token,
         "Accept": "application/json"
     }
-    
+
     url = "https://app.codacy.com/api/v3/tools/8954dff3-f19c-429c-ac76-c45fa5e73b62/patterns"
-    
-    response = requests.get(url, headers=headers)
+
+    response = requests.get(url, headers=headers, timeout=60)
     response.raise_for_status()
-    
+
     patterns_data = response.json()
     patterns = patterns_data.get('data', [])
-    
+
     # Extract rule keys from pattern IDs (remove "SonarCSharp_" prefix)
     pattern_keys = []
     for pattern in patterns:
@@ -72,48 +72,48 @@ def get_codacy_patterns(api_token):
         if pattern_id.startswith('SonarCSharp_'):
             rule_key = pattern_id.replace('SonarCSharp_', '')
             pattern_keys.append(rule_key)
-    
+
     return sorted(pattern_keys)
 
 def main():
     parser = argparse.ArgumentParser(
         description="Check which SonarQube rules from XML are missing in Codacy patterns"
     )
-    
+
     parser.add_argument(
         "--api-token",
         help="Codacy API token (can also be set via CODACY_API_TOKEN environment variable or .env file)"
     )
-    
+
     args = parser.parse_args()
-    
+
     # Get API token
     api_token = get_api_token(args.api_token)
-    
+
     print("Checking for missing rules...")
-    
+
     xml_rules = get_xml_rules()
     codacy_patterns = get_codacy_patterns(api_token)
-    
+
     print(f"Rules in XML: {len(xml_rules)}")
     print(f"Patterns in Codacy: {len(codacy_patterns)}")
-    
+
     # Find rules in XML that don't exist in Codacy
     missing_in_codacy = set(xml_rules) - set(codacy_patterns)
-    
+
     # Find patterns in Codacy that aren't in XML
     extra_in_codacy = set(codacy_patterns) - set(xml_rules)
-    
+
     if missing_in_codacy:
         print(f"\nRules in XML but NOT in Codacy ({len(missing_in_codacy)}):")
         for rule in sorted(missing_in_codacy):
             print(f"  - {rule}")
-    
+
     if extra_in_codacy:
         print(f"\nPatterns in Codacy but NOT in XML ({len(extra_in_codacy)}):")
         for rule in sorted(extra_in_codacy):
             print(f"  + {rule}")
-    
+
     print(f"\nSummary:")
     print(f"  XML rules: {len(xml_rules)}")
     print(f"  Codacy patterns: {len(codacy_patterns)}")

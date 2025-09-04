@@ -9,3 +9,7 @@ enabled_patterns_*.json
 
 # Environment variables
 .env
+
+#Ignore Codacy
+.codacy
+.codacy/**
