@@ -1,0 +1,11 @@
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md
+
+# Ignore SonarQube rules and API documentation
+csharp_sonarqube_rules.xml
+swagger.yml
+skipped_rules_*.json
+enabled_patterns_*.json
+
+# Environment variables
+.env
