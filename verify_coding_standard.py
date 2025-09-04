@@ -9,8 +9,8 @@ import sys
 import os
 import argparse
 from pathlib import Path
-from typing import List, Optional
-import defusedxml.ElementTree as ET
+from typing import List
+import defusedxml.ElementTree as xml_tree
 
 def load_env_file():
     """Load environment variables from .env file if it exists"""
@@ -42,7 +42,7 @@ def get_api_token(args_token=None):
 
 def get_xml_rules() -> List[str]:
     """Extract rule keys from XML file"""
-    tree = ET.parse("csharp_sonarqube_rules.xml")
+    tree = xml_tree.parse("csharp_sonarqube_rules.xml")
     root = tree.getroot()
 
     rules = []
@@ -136,7 +136,7 @@ def main():
     # Show matching rules
     matching_rules = set(xml_rules) & set(enabled_rules)
 
-    print(f"\nSummary:")
+    print("\nSummary:")
     print(f"  XML rules: {len(xml_rules)}")
     print(f"  Enabled patterns: {len(enabled_rules)}")
     print(f"  Missing from standard: {len(missing_in_standard)}")
@@ -145,6 +145,7 @@ def main():
 
     success_rate = (len(matching_rules) / len(xml_rules)) * 100
     print(f"  Success rate: {success_rate:.1f}%")
+
 
 if __name__ == "__main__":
     main()

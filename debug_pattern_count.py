@@ -74,7 +74,7 @@ def check_standard_patterns(standard_id: str, api_token: str) -> int:
         "Accept": "application/json"
     }
 
-    url = f"https://app.codacy.com/api/v3/organizations/gh/codacy-acme/coding-standards"
+    url = "https://app.codacy.com/api/v3/organizations/gh/codacy-acme/coding-standards"
 
     try:
         response = requests.get(url, headers=headers, timeout=60)
@@ -177,10 +177,11 @@ def main():
     print("\n3. After disabling all tools:")
     after_disable_count = check_standard_patterns(standard_id, api_token)
 
-    print(f"\nSummary:")
+    print("\nSummary:")
     print(f"  Initial patterns: {initial_count}")
     print(f"  After disabling all tools: {after_disable_count}")
     print(f"  Tools disabled: {disabled_tools}")
+
 
 if __name__ == "__main__":
     main()

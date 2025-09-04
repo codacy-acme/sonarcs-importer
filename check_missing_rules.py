@@ -9,7 +9,7 @@ import os
 import argparse
 from pathlib import Path
 from typing import List
-import defusedxml.ElementTree as ET
+import defusedxml.ElementTree as xml_tree
 
 def load_env_file():
     """Load environment variables from .env file if it exists"""
@@ -41,7 +41,7 @@ def get_api_token(args_token=None):
 
 def get_xml_rules() -> List[str]:
     """Extract rule keys from XML file"""
-    tree = ET.parse("csharp_sonarqube_rules.xml")
+    tree = xml_tree.parse("csharp_sonarqube_rules.xml")
     root = tree.getroot()
 
     rules = []
@@ -116,12 +116,13 @@ def main():
         for rule in sorted(extra_in_codacy):
             print(f"  + {rule}")
 
-    print(f"\nSummary:")
+    print("\nSummary:")
     print(f"  XML rules: {len(xml_rules)}")
     print(f"  Codacy patterns: {len(codacy_patterns)}")
     print(f"  Missing in Codacy: {len(missing_in_codacy)}")
     print(f"  Extra in Codacy: {len(extra_in_codacy)}")
     print(f"  Matching rules: {len(set(xml_rules) & set(codacy_patterns))}")
+
 
 if __name__ == "__main__":
     main()

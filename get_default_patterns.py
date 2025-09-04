@@ -8,8 +8,8 @@ import sys
 import os
 import argparse
 from pathlib import Path
-from typing import List, Dict, Optional
-import defusedxml.ElementTree as ET
+from typing import Dict, Optional
+import defusedxml.ElementTree as xml_tree
 
 def load_env_file():
     """Load environment variables from .env file if it exists"""
@@ -41,7 +41,7 @@ def get_api_token(args_token=None):
 
 def get_xml_rules() -> set:
     """Extract rule keys from XML file"""
-    tree = ET.parse("csharp_sonarqube_rules.xml")
+    tree = xml_tree.parse("csharp_sonarqube_rules.xml")
     root = tree.getroot()
 
     rules = []
@@ -137,8 +137,9 @@ def main():
             print(f"  ... and {len(missing_patterns) - 10} more")
 
     # The discrepancy is likely that Codacy enables some of these "extra" patterns by default
-    print(f"\nThe extra patterns that Codacy might be enabling by default")
+    print("\nThe extra patterns that Codacy might be enabling by default")
     print(f"are likely from this list of {len(extra_patterns)} available patterns not in our XML.")
+
 
 if __name__ == "__main__":
     main()
